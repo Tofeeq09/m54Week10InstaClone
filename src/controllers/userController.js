@@ -5,9 +5,22 @@ const { User, Like, Repost, Bookmark, Post, Follow } = require("../models");
 exports.signup = async (req, res) => {
   try {
     const { name, handle, email, password } = req.body;
-    const user = new User({ name, handle, email, password });
 
-    await user.save();
+    const existingEmailUser = await User.findOne({ email });
+    const existingHandleUser = await User.findOne({ handle });
+
+    if (existingEmailUser && existingHandleUser) {
+      return res.status(400).send({ message: "Both email and handle already exist" });
+    } else if (existingEmailUser) {
+      return res.status(400).send({ message: "Email already exists" });
+    } else if (existingHandleUser) {
+      return res.status(400).send({ message: "Handle already exists" });
+    }
+
+    // The create() method is equivalent to instantiating a document with new Model() and then calling save() on it.
+    const user = new User({ name, handle, email, password });
+    await user.save(); // re('save') middleware defined in src/models/User.js runs before the save()
+
     const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
 
     res.status(201).send({ rest });
@@ -36,20 +49,53 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-// exports.loginUser = async (req, res) => {};
+exports.login = async (req, res) => {
+  try {
+    const { email, handle, password } = req.body;
+
+    if (!email && !handle) {
+      return res.status(400).send({ message: "Email or handle is required" });
+    }
+    if (!password) {
+      return res.status(400).send({ message: "Password is required" });
+    }
+
+    let user;
+
+    if (email) {
+      user = await User.findOne({ email });
+    }
+
+    if (!user && handle) {
+      user = await User.findOne({ handle });
+    }
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+      return res.status(401).send({ message: "Invalid email or password" });
+    }
+
+    const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
+
+    res.status(200).send({ rest });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ message: error.message });
+  }
+};
 
 // exports.getUser = async (req, res) => {
 //   try {
 //     const { handle } = req.params;
 
-//     const user = await User.findOne({ handle: handle });
+// const user = await User.findOne({ handle: handle }).select("-password -__v -email");
 
-//     const { password, __v, email, ...rest } = user._doc;
-//     const result = {
-//       ...rest,
-//     };
-
-//     res.status(200).send(result);
+//     res.status(200).send(user);
 //   } catch (error) {
 //     if (error.name === "CastError") {
 //       return res.status(400).send({ message: "Invalid user handle" });
@@ -65,6 +111,7 @@ exports.getUser = async (req, res) => {
     const { handle } = req.params;
 
     const user = await User.findOne({ handle: handle });
+    let likes = await Like.find({ user: user._id }).populate("post");
     let reposts = await Repost.find({ user: user._id }).populate("post");
     let bookmarks = await Bookmark.find({ user: user._id }).populate("post");
     let posts = await Post.find({ creator: user._id });
@@ -94,6 +141,7 @@ exports.getUser = async (req, res) => {
     const { password, __v, email, ...rest } = user._doc;
     const result = {
       ...rest,
+      likes,
       reposts,
       bookmarks,
       posts,
@@ -108,7 +156,7 @@ exports.getUser = async (req, res) => {
     }
 
     console.log(error);
-    res.status(400).send({ message: error.message });
+    res.status(500).send({ message: error.message });
   }
 };
 

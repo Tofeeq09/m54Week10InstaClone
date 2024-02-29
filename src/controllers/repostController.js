@@ -20,6 +20,6 @@ const getReposts = async (req, res) => {
     }
 
     console.log(error);
-    res.status(400).send({ message: error.message });
+    res.status(500).send({ message: error.message });
   }
 };
