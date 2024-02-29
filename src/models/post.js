@@ -1,7 +1,7 @@
+// models /Post.js
+
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-
-const User = require("./user");
 
 // Content schema
 const contentSchema = new Schema({

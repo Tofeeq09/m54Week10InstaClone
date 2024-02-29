@@ -1,7 +1,7 @@
+// models /Comment.js
+
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-
-const Post = require("./post");
 
 // Comment schema
 const commentSchema = new Schema({
