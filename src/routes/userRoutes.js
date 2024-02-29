@@ -6,8 +6,10 @@ const { userController } = require("../controllers");
 // "/users"
 const userRouter = Router();
 
-userRouter.post("/signup", userController.signup);
 userRouter.post("/login", userController.login);
+userRouter.post("/logout", userController.logout);
+
+userRouter.post("/signup", userController.signup);
 userRouter.get("/", userController.getUsers);
 userRouter.get("/:handle", userController.getUser);
 // userRouter.get("/:handle/profile", userController.getUserProfile);

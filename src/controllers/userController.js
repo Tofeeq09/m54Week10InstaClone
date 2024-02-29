@@ -49,6 +49,10 @@ exports.getUsers = async (req, res) => {
   }
 };
 
+const jwt = require("jsonwebtoken");
+
+const jwt = require("jsonwebtoken");
+
 exports.login = async (req, res) => {
   try {
     const { email, handle, password } = req.body;
@@ -82,7 +86,14 @@ exports.login = async (req, res) => {
 
     const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
 
-    res.status(200).send({ rest });
+    // Create a JWT token
+    const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: "1h" });
+
+    // Set a httpOnly cookie with the token
+    res.cookie("token", token, { httpOnly: true });
+
+    // Send the user data back to the client
+    res.status(200).send({ user: rest });
   } catch (error) {
     console.log(error);
     res.status(400).send({ message: error.message });
