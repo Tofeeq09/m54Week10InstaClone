@@ -1,10 +1,10 @@
-const User = require("./User").default;
-const Post = require("./Post").default;
-const Comment = require("./Comment").default;
-const Message = require("./Message").default;
-const Like = require("./Like").default;
-const Repost = require("./Repost").default;
-const Bookmark = require("./Bookmark").default;
+const User = require("./User");
+const Post = require("./Post");
+const Comment = require("./Comment");
+const Message = require("./Message");
+const Like = require("./Like");
+const Repost = require("./Repost");
+const Bookmark = require("./Bookmark");
 
 module.exports = {
   User,

@@ -1,6 +1,6 @@
 // routes /index.js
 
-const { userRoutes } = require("./userRoutes");
+const userRoutes = require("./userRoutes");
 
 module.exports = {
   userRoutes,
