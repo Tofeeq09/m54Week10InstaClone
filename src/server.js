@@ -5,7 +5,7 @@ const express = require("express");
 const cors = require("cors");
 
 const connection = require("./db/connection");
-const { userRoutes } = require("./routes");
+const { userRoutes, likeRoutes } = require("./routes");
 
 const port = process.env.PORT || 5001;
 const app = express();
@@ -16,6 +16,7 @@ app.use(express.json());
 connection();
 
 app.use("/users", userRoutes);
+app.use("/likes", likeRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ message: "Server is running" });

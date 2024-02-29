@@ -2,11 +2,11 @@
 
 const { User, Like, Repost, Bookmark, Post, Follow } = require("../models");
 
-exports.signupUser = async (req, res) => {
+exports.signup = async (req, res) => {
   try {
     const { name, handle, email, password } = req.body;
-
     const user = new User({ name, handle, email, password });
+
     await user.save();
     const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
 
@@ -38,21 +38,38 @@ exports.getUsers = async (req, res) => {
 
 // exports.loginUser = async (req, res) => {};
 
+// exports.getUser = async (req, res) => {
+//   try {
+//     const { handle } = req.params;
+
+//     const user = await User.findOne({ handle: handle });
+
+//     const { password, __v, email, ...rest } = user._doc;
+//     const result = {
+//       ...rest,
+//     };
+
+//     res.status(200).send(result);
+//   } catch (error) {
+//     if (error.name === "CastError") {
+//       return res.status(400).send({ message: "Invalid user handle" });
+//     }
+
+//     console.log(error);
+//     res.status(400).send({ message: error.message });
+//   }
+// };
+
 exports.getUser = async (req, res) => {
   try {
     const { handle } = req.params;
 
     const user = await User.findOne({ handle: handle });
-    let likes = await Like.find({ user: user._id }).populate("post");
     let reposts = await Repost.find({ user: user._id }).populate("post");
     let bookmarks = await Bookmark.find({ user: user._id }).populate("post");
     let posts = await Post.find({ creator: user._id });
     let following = await Follow.find({ user: user._id }).populate("followedUser");
     let followers = await Follow.find({ followedUser: user._id }).populate("user");
-
-    if (likes.length === 0) {
-      likes = "No likes";
-    }
 
     if (reposts.length === 0) {
       reposts = "No reposts";
@@ -77,7 +94,6 @@ exports.getUser = async (req, res) => {
     const { password, __v, email, ...rest } = user._doc;
     const result = {
       ...rest,
-      likes,
       reposts,
       bookmarks,
       posts,
