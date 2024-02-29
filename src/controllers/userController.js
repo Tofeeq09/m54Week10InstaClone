@@ -19,14 +19,17 @@ exports.signupUser = async (req, res) => {
 
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const searchQuery = (req.query.search || "").trim();
+    let query = {};
+    if (searchQuery !== "") {
+      query = {
+        $or: [{ name: { $regex: searchQuery, $options: "i" } }, { handle: { $regex: searchQuery, $options: "i" } }],
+      };
+    }
 
-    const sanitizedUsers = users.map((user) => {
-      const { password, __v, email, ...rest } = user._doc;
-      return rest;
-    });
+    const users = await User.find(query).select("-password -__v -email");
 
-    res.status(200).send({ sanitizedUsers });
+    res.status(200).send({ users });
   } catch (error) {
     console.log(error);
     res.status(400).send({ message: error.message });
