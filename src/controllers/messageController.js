@@ -2,7 +2,7 @@
 
 const { User, Like, Repost, Bookmark, Post, Follow } = require("../models");
 
-const postMessage = async (req, res) => {
+exports.postMessage = async (req, res) => {
   try {
     const { id } = req.user;
     const { message } = req.body;

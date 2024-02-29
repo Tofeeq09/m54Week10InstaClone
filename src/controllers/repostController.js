@@ -2,7 +2,7 @@
 
 const { User, Like, Repost, Bookmark, Post, Follow } = require("../models");
 
-const getReposts = async (req, res) => {
+exports.getReposts = async (req, res) => {
   try {
     const { handle } = req.params;
 

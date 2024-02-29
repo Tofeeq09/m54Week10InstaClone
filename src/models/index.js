@@ -1,13 +1,13 @@
 // Path: src/models/index.js
 
-const User = require("./User");
-const Post = require("./Post");
-const Comment = require("./Comment");
-const Message = require("./Message");
-const Like = require("./Like");
-const Repost = require("./Repost");
-const Bookmark = require("./Bookmark");
-const Follow = require("./Follow");
+const User = require("./user");
+const Post = require("./post");
+const Comment = require("./comment");
+const Message = require("./message");
+const Like = require("./like");
+const Repost = require("./repost");
+const Bookmark = require("./bookmark");
+const Follow = require("./follow");
 
 module.exports = {
   User,

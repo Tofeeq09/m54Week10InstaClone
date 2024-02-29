@@ -1,8 +1,7 @@
 // Path: src/controllers/postController.js
 
 const { User, Like, Repost, Bookmark, Post, Follow } = require("../models");
-
-const getPosts = async (req, res) => {
+exports.getPosts = async (req, res) => {
   try {
     const { handle } = req.params;
     const user = await User.findOne({
