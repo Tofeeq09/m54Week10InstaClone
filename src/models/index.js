@@ -17,4 +17,5 @@ module.exports = {
   Like,
   Repost,
   Bookmark,
+  Follow,
 };
