@@ -1,4 +1,4 @@
-// models /Repost.js
+// models/Repost.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;

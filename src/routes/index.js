@@ -1,4 +1,4 @@
-// routes /index.js
+// routes/index.js
 
 const userRoutes = require("./userRoutes");
 

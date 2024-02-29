@@ -1,4 +1,4 @@
-// routes // userRoutes.js
+// routes/userRoutes.js
 
 const { Router } = require("express");
 const { userController } = require("../controllers");

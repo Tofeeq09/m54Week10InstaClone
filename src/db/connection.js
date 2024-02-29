@@ -1,3 +1,5 @@
+// db/connection.js
+
 const mongoose = require("mongoose");
 
 const connection = async () => {

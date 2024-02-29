@@ -1,4 +1,4 @@
-// models /Comment.js
+// models/Comment.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;

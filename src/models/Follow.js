@@ -1,18 +1,18 @@
-// models/Like.js
+// models/Follow.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-// Like schema
-const likeSchema = new Schema({
+// Follow schema
+const followSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  post: {
+  followedUser: {
     type: Schema.Types.ObjectId,
-    ref: "Post",
+    ref: "User",
     required: true,
   },
   timestamp: {
@@ -21,6 +21,6 @@ const likeSchema = new Schema({
   },
 });
 
-const Like = mongoose.model("Like", likeSchema);
+const Follow = mongoose.model("Follow", followSchema);
 
-module.exports = Like;
+module.exports = Follow;
