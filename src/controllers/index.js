@@ -1,4 +1,4 @@
-// controllers/index.js
+// Path: src/controllers/index.js
 
 const userController = require("./userController");
 

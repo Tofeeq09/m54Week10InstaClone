@@ -1,4 +1,4 @@
-// routes/index.js
+// Path: src/routes/index.js
 
 const userRoutes = require("./userRoutes");
 

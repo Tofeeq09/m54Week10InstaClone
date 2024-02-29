@@ -1,4 +1,4 @@
-// models/Post.js
+// Path: src/models/Post.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;

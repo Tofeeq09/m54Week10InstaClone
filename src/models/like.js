@@ -1,4 +1,4 @@
-// models/Like.js
+// Path: src/models/Like.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;

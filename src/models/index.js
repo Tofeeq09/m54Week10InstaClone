@@ -1,4 +1,4 @@
-// models/index.js
+// Path: src/models/index.js
 
 const User = require("./User");
 const Post = require("./Post");

@@ -1,6 +1,6 @@
-// controllers/userController.js
+// Path: src/controllers/userController.js
 
-const { User, Like, Repost, Bookmark, Post } = require("../models");
+const { User, Like, Repost, Bookmark, Post, Follow } = require("../models");
 
 exports.signupUser = async (req, res) => {
   try {
@@ -40,16 +40,15 @@ exports.getUsers = async (req, res) => {
 
 exports.getUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { handle } = req.params;
 
-    const user = await User.findById(id);
-    let likes = await Like.find({ user: id }).populate("post");
-    let reposts = await Repost.find({ user: id }).populate("post");
-    let bookmarks = await Bookmark.find({ user: id }).populate("post");
-    let posts = await Post.find({ creator: id });
-
-    let following = await Follow.find({ user: id }).populate("followedUser");
-    let followers = await Follow.find({ followedUser: id }).populate("user");
+    const user = await User.findOne({ handle: handle });
+    let likes = await Like.find({ user: user._id }).populate("post");
+    let reposts = await Repost.find({ user: user._id }).populate("post");
+    let bookmarks = await Bookmark.find({ user: user._id }).populate("post");
+    let posts = await Post.find({ creator: user._id });
+    let following = await Follow.find({ user: user._id }).populate("followedUser");
+    let followers = await Follow.find({ followedUser: user._id }).populate("user");
 
     if (likes.length === 0) {
       likes = "No likes";
@@ -67,6 +66,14 @@ exports.getUser = async (req, res) => {
       posts = "No posts";
     }
 
+    if (following.length === 0) {
+      following = "No following";
+    }
+
+    if (followers.length === 0) {
+      followers = "No followers";
+    }
+
     const { password, __v, email, ...rest } = user._doc;
     const result = {
       ...rest,
@@ -74,12 +81,14 @@ exports.getUser = async (req, res) => {
       reposts,
       bookmarks,
       posts,
+      following,
+      followers,
     };
 
     res.status(200).send(result);
   } catch (error) {
     if (error.name === "CastError") {
-      return res.status(400).send({ message: "Invalid user ID" });
+      return res.status(400).send({ message: "Invalid user handle" });
     }
 
     console.log(error);

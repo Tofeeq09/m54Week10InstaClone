@@ -1,4 +1,4 @@
-// db/connection.js
+// Path: src/db/connection.js
 
 const mongoose = require("mongoose");
 

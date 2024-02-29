@@ -1,4 +1,4 @@
-// models/Follow.js
+// Path: src/models/Follow.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
