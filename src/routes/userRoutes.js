@@ -9,7 +9,7 @@ const userRouter = Router();
 userRouter.post("/", userController.signupUser);
 // userRouter.post("/login", userController.loginUser);
 userRouter.get("/", userController.getUsers);
-// userRouter.get("/:id", userController.getUser);
+userRouter.get("/:id", userController.getUser);
 // userRouter.get("/:id/profile", userController.getUserProfile);
 // userRouter.put("/:id", userController.updateUser);
 // userRouter.delete("/:id", userController.deleteUser);
