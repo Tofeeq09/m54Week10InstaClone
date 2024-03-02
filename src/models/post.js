@@ -1,4 +1,4 @@
-// models /Post.js
+// Path: src/models/Post.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
@@ -39,6 +39,9 @@ const postSchema = new Schema({
     index: true, // timestamp is indexed for performance
   },
 });
+
+// Add a text index to the caption field for full-text search
+postSchema.index({ "content.caption": "text" });
 
 const Post = mongoose.model("Post", postSchema);
 

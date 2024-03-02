@@ -1,15 +1,21 @@
-// routes // userRoutes.js
+// Path: src/routes/userRoutes.js
 
 const { Router } = require("express");
-const { userController } = require("../controllers");
 
+const { userController } = require("../controllers");
+const { authenticate } = require("../middleware");
+const { validation } = require("../middleware");
+
+// "/users"
 const userRouter = Router();
 
-userRouter.post("/signup", userController.signupUser);
-// userRouter.post("/login", userController.loginUser);
-// userRouter.get("/users/:id", userController.getUser);
-// userRouter.get("/users/:id/profile", userController.getUserProfile);
-// userRouter.put("/users/:id", userController.updateUser);
-// userRouter.delete("/users/:id", userController.deleteUser);
+userRouter.post("/login", userController.login);
+userRouter.post("/logout", userController.logout);
+userRouter.post("/signup", userController.signup);
+userRouter.get("/", userController.getUsers);
+userRouter.get("/:handle", userController.getUser);
+userRouter.get("/:handle/private", authenticate.authenticate, userController.getPrivate);
+userRouter.put("/:handle", authenticate.authenticate, validation.checkPasswordChanged, userController.updateUser);
+userRouter.delete("/:handle", authenticate.authenticate, userController.deleteUser);
 
 module.exports = userRouter;

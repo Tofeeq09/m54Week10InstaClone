@@ -1,4 +1,4 @@
-// models /Repost.js
+// Path: src/models/Repost.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;

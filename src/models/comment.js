@@ -1,4 +1,4 @@
-// models /Comment.js
+// Path: src/models/Comment.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
