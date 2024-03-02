@@ -108,12 +108,6 @@ exports.followUser = async (req, res) => {
       return;
     }
 
-    // Check if req.user and req.user.followingList exist
-    if (!req.user || !req.user.followingList) {
-      res.status(400).json({ message: "Current user not properly defined" });
-      return;
-    }
-
     // Check if the current user is already following the user to follow
     if (req.user.followingList.some((id) => id.equals(userToFollow._id))) {
       res.status(400).json({ message: `You are already following ${handle}` });
@@ -121,12 +115,13 @@ exports.followUser = async (req, res) => {
     }
 
     // Add the user to follow to the current user's following list and increment following count
-    req.user.followingList.push(userToFollow._id);
     await User.updateOne({ _id: req.user._id }, { $push: { followingList: userToFollow._id }, $inc: { following: 1 } });
 
     // Add the current user to the user to follow's followers list and increment followers count
-    userToFollow.followersList.push(req.user._id);
     await User.updateOne({ _id: userToFollow._id }, { $push: { followersList: req.user._id }, $inc: { followers: 1 } });
+
+    // Re-fetch the current user document from the database and attach it to the req.user object
+    req.user = await User.findById(req.user._id);
 
     res.status(200).json({ message: `You are now following ${handle}` });
     return;
@@ -155,15 +150,19 @@ exports.unfollowUser = async (req, res) => {
     }
 
     // Remove the user to unfollow from the current user's following list and decrement following count
-    req.user.followingList = req.user.followingList.filter((id) => !id.equals(userToUnfollow._id));
-    await User.updateOne({ _id: req.user._id }, { followingList: req.user.followingList, $inc: { following: -1 } });
+    await User.updateOne(
+      { _id: req.user._id },
+      { $pull: { followingList: userToUnfollow._id }, $inc: { following: -1 } }
+    );
 
     // Remove the current user from the user to unfollow's followers list and decrement followers count
-    userToUnfollow.followersList = userToUnfollow.followersList.filter((id) => !id.equals(req.user._id));
     await User.updateOne(
       { _id: userToUnfollow._id },
-      { followersList: userToUnfollow.followersList, $inc: { followers: -1 } }
+      { $pull: { followersList: req.user._id }, $inc: { followers: -1 } }
     );
+
+    // Re-fetch the current user document from the database and attach it to the req.user object
+    req.user = await User.findById(req.user._id);
 
     res.status(200).json({ message: `You are no longer following ${handle}` });
     return;
@@ -185,7 +184,7 @@ exports.getUsers = async (req, res) => {
       };
     }
 
-    const users = await User.find(query).select("-password -__v -email");
+    const users = await User.find(query).select("-password -__v -email -followersList -followingList");
 
     res.status(200).json({ users });
     return;
@@ -212,6 +211,7 @@ exports.getUser = async (req, res) => {
     rest.comments = await Comment.find({ user: user._id });
     rest.likedPosts = await Post.find({ likedBy: user._id });
     rest.repostedPosts = await Post.find({ repostedBy: user._id });
+    rest.bookmarkedPosts = await Post.find({ bookmarkedBy: user._id });
 
     res.status(200).json({ user: rest });
   } catch (error) {
