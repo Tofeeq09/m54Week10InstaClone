@@ -1,6 +1,6 @@
 // Path: src/controllers/postController.js
 
-const { User, Like, Repost, Comment, Bookmark, Post, Follow } = require("../models");
+const { User, Post, Comment, Message } = require("../models");
 
 exports.addPost = async (req, res) => {
   try {
@@ -23,6 +23,150 @@ exports.addPost = async (req, res) => {
   }
 };
 
+exports.likePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the current user has already liked the post
+    if (post.likedBy.some((id) => id.equals(req.user._id))) {
+      return res.status(400).json({ message: "You have already liked this post" });
+    }
+
+    // Add the authenticated user to the likedBy array and increment the likes count
+    await Post.updateOne({ _id: postId }, { $push: { likedBy: req.user._id }, $inc: { likes: 1 } });
+
+    res.status(200).json({ message: "Post liked successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.unlikePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the current user has not liked the post
+    if (!post.likedBy.some((id) => id.equals(req.user._id))) {
+      return res.status(400).json({ message: "You have not liked this post" });
+    }
+
+    // Remove the authenticated user from the likedBy array and decrement the likes count
+    await Post.updateOne({ _id: postId }, { $pull: { likedBy: req.user._id }, $inc: { likes: -1 } });
+
+    res.status(200).json({ message: "Post unliked successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.repostPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the current user has already reposted the post
+    if (post.repostedBy.some((id) => id.equals(req.user._id))) {
+      return res.status(400).json({ message: "You have already reposted this post" });
+    }
+
+    // Add the authenticated user to the repostedBy array and increment the reposts count
+    await Post.updateOne({ _id: postId }, { $push: { repostedBy: req.user._id }, $inc: { reposts: 1 } });
+
+    res.status(200).json({ message: "Post reposted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.unrepostPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the current user has not reposted the post
+    if (!post.repostedBy.some((id) => id.equals(req.user._id))) {
+      return res.status(400).json({ message: "You have not reposted this post" });
+    }
+
+    // Remove the authenticated user from the repostedBy array and decrement the reposts count
+    await Post.updateOne({ _id: postId }, { $pull: { repostedBy: req.user._id }, $inc: { reposts: -1 } });
+
+    res.status(200).json({ message: "Post unreposted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.bookmarkPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the current user has already bookmarked the post
+    if (post.bookmarkedBy.some((id) => id.equals(req.user._id))) {
+      return res.status(400).json({ message: "You have already bookmarked this post" });
+    }
+
+    // Add the authenticated user to the bookmarkedBy array and increment the bookmarks count
+    await Post.updateOne({ _id: postId }, { $push: { bookmarkedBy: req.user._id }, $inc: { bookmarks: 1 } });
+
+    res.status(200).json({ message: "Post bookmarked successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.unbookmarkPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the current user has not bookmarked the post
+    if (!post.bookmarkedBy.some((id) => id.equals(req.user._id))) {
+      return res.status(400).json({ message: "You have not bookmarked this post" });
+    }
+
+    // Remove the authenticated user from the bookmarkedBy array and decrement the bookmarks count
+    await Post.updateOne({ _id: postId }, { $pull: { bookmarkedBy: req.user._id }, $inc: { bookmarks: -1 } });
+
+    res.status(200).json({ message: "Post unbookmarked successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getAllPosts = async (req, res) => {
   try {
     const { q } = req.query; // Get the search query from the query parameters
@@ -31,42 +175,22 @@ exports.getAllPosts = async (req, res) => {
     if (q) {
       const users = await User.find({ $text: { $search: q } });
       const userIds = users.map((user) => user._id);
-
       // Find posts whose creator is in the list of found users
-      const postsByUser = await Post.find({ creator: { $in: userIds } }).populate("creator", "handle name");
-
+      const postsByUser = await Post.find({ creator: { $in: userIds } }).populate(
+        "creator",
+        "handle name profilePhoto"
+      );
       // Find posts whose caption matches the search query
-      const postsByCaption = await Post.find({ $text: { $search: q } }).populate("creator", "handle name");
-
+      const postsByCaption = await Post.find({ $text: { $search: q } }).populate("creator", "handle name profilePhoto");
       // Combine the posts
       posts = [...postsByUser, ...postsByCaption];
     }
 
     if (!q) {
-      posts = await Post.find().populate("creator", "handle name");
+      posts = await Post.find().populate("creator", "handle name profilePhoto");
     }
 
-    // Add the count of likes, comments, and bookmarks to each post
-    const postsWithCounts = await Promise.all(
-      posts.map(async (post) => {
-        const [likeCount, repostCount, commentCount, bookmarkCount] = await Promise.all([
-          Like.countDocuments({ post: post._id }),
-          Repost.countDocuments({ post: post._id }),
-          Comment.countDocuments({ post: post._id }),
-          Bookmark.countDocuments({ post: post._id }),
-        ]);
-
-        return {
-          ...post._doc,
-          likeCount,
-          repostCount,
-          commentCount,
-          bookmarkCount,
-        };
-      })
-    );
-
-    res.status(200).json(postsWithCounts);
+    res.status(200).json(posts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
@@ -85,29 +209,9 @@ exports.getPostsByHandle = async (req, res) => {
 
     const searchQuery = q ? { $text: { $search: q }, creator: user._id } : { creator: user._id };
 
-    const posts = await Post.find(searchQuery).populate("creator", "handle");
+    const posts = await Post.find(searchQuery).populate("creator", "handle name profilePhoto");
 
-    // Add the count of likes, comments, and bookmarks to each post
-    const postsWithCounts = await Promise.all(
-      posts.map(async (post) => {
-        const [likeCount, repostCount, commentCount, bookmarkCount] = await Promise.all([
-          Like.countDocuments({ post: post._id }),
-          Repost.countDocuments({ post: post._id }),
-          Comment.countDocuments({ post: post._id }),
-          Bookmark.countDocuments({ post: post._id }),
-        ]);
-
-        return {
-          ...post._doc,
-          likeCount,
-          repostCount,
-          commentCount,
-          bookmarkCount,
-        };
-      })
-    );
-
-    res.status(200).json(postsWithCounts);
+    res.status(200).json(posts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
@@ -118,28 +222,20 @@ exports.getPost = async (req, res) => {
   try {
     const { postId } = req.params;
 
-    const post = await Post.findById(postId).populate("creator", "handle name");
+    const post = await Post.findById(postId).populate("creator", "handle name profilePhoto");
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    const [likeCount, repostCount, commentCount, bookmarkCount] = await Promise.all([
-      Like.countDocuments({ post: postId }),
-      Repost.countDocuments({ post: postId }),
-      Comment.countDocuments({ post: postId }),
-      Bookmark.countDocuments({ post: postId }),
-    ]);
+    const comments = await Comment.find({ post: postId }).populate("user", "handle name profilePhoto");
 
-    const postWithCounts = {
+    const postWithComments = {
       ...post._doc,
-      likeCount,
-      repostCount,
-      commentCount,
-      bookmarkCount,
+      comments,
     };
 
-    res.status(200).json(postWithCounts);
+    res.status(200).json(postWithComments);
     return;
   } catch (error) {
     console.error(error);
@@ -195,8 +291,6 @@ exports.deletePost = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Check if the authenticated user is the creator of the post
-    // The .toString() method converts the ObjectId to a string as the two cannot be compared directly as they are objects
     if (req.user._id.toString() !== post.creator.toString()) {
       return res.status(403).json({ message: "Unauthorized" });
     }

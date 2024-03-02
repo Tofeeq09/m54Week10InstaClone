@@ -1,28 +1,17 @@
-// Path: src/models/Comment.js
+// Path: src/models/comment.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 // Comment schema
-const commentSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true, // user is mandatory
-  },
-  content: {
-    type: String,
-    required: true, // content is mandatory
-  },
-  post: {
-    type: Schema.Types.ObjectId,
-    ref: "Post",
-    required: true, // post is mandatory
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now, // timestamp is automatically generated
-  },
+const commentSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  post: { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
+  parent: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
+  content: String,
+  likes: { type: Number, default: 0 },
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  timestamp: { type: Date, default: Date.now },
 });
 
 // Comment middleware
@@ -30,6 +19,8 @@ commentSchema.post("save", async function (doc) {
   const Post = mongoose.model("Post");
   await Post.findByIdAndUpdate(doc.post, { $push: { comments: doc._id } });
 });
+
+commentSchema.index({ content: "text" });
 
 const Comment = mongoose.model("Comment", commentSchema);
 
