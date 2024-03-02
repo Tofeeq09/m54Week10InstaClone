@@ -1,7 +1,7 @@
 // Path: src/routes/index.js
 
 const userRoutes = require("./userRoutes");
-// const postRoutes = require("./postRoutes");
+const postRoutes = require("./postRoutes");
 // const commentRoutes = require("./commentRoutes");
 // const messageRoutes = require("./messageRoutes");
 const likeRoutes = require("./likeRoutes");
@@ -11,7 +11,7 @@ const likeRoutes = require("./likeRoutes");
 
 module.exports = {
   userRoutes,
-  // postRoutes,
+  postRoutes,
   // commentRoutes,
   // messageRoutes,
   likeRoutes,

@@ -1,6 +1,7 @@
 // Path: src/routes/userRoutes.js
 
 const { Router } = require("express");
+
 const { userController } = require("../controllers");
 const { authenticate } = require("../middleware");
 const { validation } = require("../middleware");

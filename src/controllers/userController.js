@@ -132,10 +132,10 @@ exports.getUser = async (req, res) => {
     const { password, __v, email, ...rest } = user._doc;
     const result = {
       ...rest,
-      likes,
-      reposts,
-      bookmarks,
       posts,
+      reposts,
+      likes,
+      bookmarks,
       following,
       followers,
     };
