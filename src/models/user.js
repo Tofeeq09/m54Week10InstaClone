@@ -96,6 +96,9 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, user.password);
 };
 
+// Add a text index to the handle and name fields for full-text search
+userSchema.index({ handle: "text", name: "text" });
+
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;

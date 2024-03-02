@@ -40,6 +40,9 @@ const postSchema = new Schema({
   },
 });
 
+// Add a text index to the caption field for full-text search
+postSchema.index({ "content.caption": "text" });
+
 const Post = mongoose.model("Post", postSchema);
 
 module.exports = Post;

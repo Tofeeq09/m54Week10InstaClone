@@ -23,16 +23,69 @@ exports.addPost = async (req, res) => {
   }
 };
 
-exports.getPosts = async (req, res) => {
+exports.getPostsByHandle = async (req, res) => {
   try {
     const { handle } = req.params;
-    const user = await User.findOne({ handle });
+    const { q } = req.query;
 
+    const user = await User.findOne({ handle });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const posts = await Post.find({ creator: user._id }).populate("creator", "handle");
+    const searchQuery = q ? { $text: { $search: q }, creator: user._id } : { creator: user._id };
+
+    const posts = await Post.find(searchQuery).populate("creator", "handle");
+
+    // Add the count of likes, comments, and bookmarks to each post
+    const postsWithCounts = await Promise.all(
+      posts.map(async (post) => {
+        const [likeCount, repostCount, commentCount, bookmarkCount] = await Promise.all([
+          Like.countDocuments({ post: post._id }),
+          Repost.countDocuments({ post: post._id }),
+          Comment.countDocuments({ post: post._id }),
+          Bookmark.countDocuments({ post: post._id }),
+        ]);
+
+        return {
+          ...post._doc,
+          likeCount,
+          repostCount,
+          commentCount,
+          bookmarkCount,
+        };
+      })
+    );
+
+    res.status(200).json(postsWithCounts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getAllPosts = async (req, res) => {
+  try {
+    const { q } = req.query; // Get the search query from the query parameters
+
+    let posts = [];
+    if (q) {
+      const users = await User.find({ $text: { $search: q } });
+      const userIds = users.map((user) => user._id);
+
+      // Find posts whose creator is in the list of found users
+      const postsByUser = await Post.find({ creator: { $in: userIds } }).populate("creator", "handle name");
+
+      // Find posts whose caption matches the search query
+      const postsByCaption = await Post.find({ $text: { $search: q } }).populate("creator", "handle name");
+
+      // Combine the posts
+      posts = [...postsByUser, ...postsByCaption];
+    }
+
+    if (!q) {
+      posts = await Post.find().populate("creator", "handle name");
+    }
 
     // Add the count of likes, comments, and bookmarks to each post
     const postsWithCounts = await Promise.all(
