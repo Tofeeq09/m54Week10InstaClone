@@ -140,8 +140,35 @@ exports.getPost = async (req, res) => {
     };
 
     res.status(200).json(postWithCounts);
+    return;
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
+    return;
+  }
+};
+
+exports.deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the authenticated user is the creator of the post
+    if (req.user._id.toString() !== post.creator.toString()) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    await Post.findByIdAndDelete(postId);
+
+    res.status(200).json({ message: "Post deleted successfully" });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+    return;
   }
 };
