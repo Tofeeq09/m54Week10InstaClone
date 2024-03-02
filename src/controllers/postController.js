@@ -113,3 +113,101 @@ exports.getPostsByHandle = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId).populate("creator", "handle name");
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const [likeCount, repostCount, commentCount, bookmarkCount] = await Promise.all([
+      Like.countDocuments({ post: postId }),
+      Repost.countDocuments({ post: postId }),
+      Comment.countDocuments({ post: postId }),
+      Bookmark.countDocuments({ post: postId }),
+    ]);
+
+    const postWithCounts = {
+      ...post._doc,
+      likeCount,
+      repostCount,
+      commentCount,
+      bookmarkCount,
+    };
+
+    res.status(200).json(postWithCounts);
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+    return;
+  }
+};
+
+exports.updatePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { caption, postImage } = req.body;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the authenticated user is the creator of the post
+    // The .toString() method converts the ObjectId to a string as the two cannot be compared directly as they are objects
+    if (req.user._id.toString() !== post.creator.toString()) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      {
+        content: {
+          caption,
+          postImage,
+        },
+      },
+      { new: true }
+    );
+
+    const { __v, ...rest } = updatedPost._doc;
+
+    res.status(200).json({ message: "Post updated successfully", post: rest });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+    return;
+  }
+};
+
+exports.deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if the authenticated user is the creator of the post
+    // The .toString() method converts the ObjectId to a string as the two cannot be compared directly as they are objects
+    if (req.user._id.toString() !== post.creator.toString()) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    await Post.findByIdAndDelete(postId);
+
+    res.status(200).json({ message: "Post deleted successfully" });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+    return;
+  }
+};
