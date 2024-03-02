@@ -4,25 +4,12 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 // Comment schema
-const commentSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true, // user is mandatory
-  },
-  content: {
-    type: String,
-    required: true, // content is mandatory
-  },
-  post: {
-    type: Schema.Types.ObjectId,
-    ref: "Post",
-    required: true, // post is mandatory
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now, // timestamp is automatically generated
-  },
+const commentSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  post: { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
+  parent: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
+  content: String,
+  timestamp: { type: Date, default: Date.now },
 });
 
 // Comment middleware

@@ -10,7 +10,7 @@ const { validation } = require("../middleware");
 const userRouter = Router();
 
 userRouter.post("/login", userController.login);
-userRouter.post("/logout", userController.logout);
+userRouter.post("/logout", authenticate.authenticate, userController.logout);
 userRouter.post("/signup", userController.signup);
 userRouter.get("/", userController.getUsers);
 userRouter.get("/:handle", userController.getUser);

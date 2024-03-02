@@ -8,7 +8,7 @@ const { authenticate } = require("../middleware");
 // "/comments"
 const commentRouter = Router();
 
-commentRouter.post("/post/:postId", authenticate.authenticate, commentController.addComment);
+commentRouter.post("/post/:postId/:parentId?", authenticate.authenticate, commentController.addComment);
 
 commentRouter.get("/:commentId", commentController.getComment);
 

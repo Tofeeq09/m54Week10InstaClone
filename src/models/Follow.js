@@ -5,20 +5,9 @@ const { Schema } = mongoose;
 
 // Follow schema
 const followSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  followedUser: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
-  },
+  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  followedUser: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  timestamp: { type: Date, default: Date.now },
 });
 
 const Follow = mongoose.model("Follow", followSchema);

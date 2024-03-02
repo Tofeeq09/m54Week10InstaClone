@@ -5,20 +5,9 @@ const { Schema } = mongoose;
 
 // Bookmark schema
 const bookmarkSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  post: {
-    type: Schema.Types.ObjectId,
-    ref: "Post",
-    required: true,
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
-  },
+  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  post: { type: Schema.Types.ObjectId, ref: "Post", required: true },
+  timestamp: { type: Date, default: Date.now },
 });
 
 // Add a unique compound index on user and post

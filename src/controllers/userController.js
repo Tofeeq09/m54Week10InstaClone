@@ -37,7 +37,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: "1h" });
     res.cookie("token", token, { httpOnly: true, secure: true });
 
-    console.log(`res.get("Set-Cookie"): ${res.get("Set-Cookie")}`); // For debugging
+    console.log(`res.get("Set-Cookie"): ${res.get("Set-Cookie")}`); // For development purposes
 
     res.status(200).json({ user: rest });
     return;
@@ -55,8 +55,9 @@ exports.login = async (req, res) => {
 
 exports.logout = (req, res) => {
   // Clear the 'token' cookie
+
   res.clearCookie("token");
-  res.status(200).json({ message: "Logged out" });
+  res.status(200).json({ message: `User ${req.user.handle} has been logged out` });
 };
 
 exports.signup = async (req, res) => {
@@ -164,7 +165,7 @@ exports.getPrivate = async (req, res) => {
 
     const email = req.user.email;
 
-    res.status(200).json(email);
+    res.status(200).json({ email });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
