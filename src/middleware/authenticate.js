@@ -9,7 +9,7 @@ exports.authenticate = async (req, res, next) => {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.status(401).send({ message: "No token provided" });
+    return res.status(401).json({ message: "No token provided" });
   }
 
   try {
@@ -17,12 +17,12 @@ exports.authenticate = async (req, res, next) => {
     const user = await User.findById(payload.userId);
 
     if (!user) {
-      return res.status(401).send({ message: "User not found" });
+      return res.status(401).json({ message: "User not found" });
     }
 
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).send({ message: "Invalid token" });
+    res.status(401).json({ message: "Invalid token" });
   }
 };

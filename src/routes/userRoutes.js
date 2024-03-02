@@ -15,6 +15,6 @@ userRouter.get("/", userController.getUsers);
 userRouter.get("/:handle", authenticate.authenticate, userController.getUser);
 // userRouter.get("/:handle/profile", authenticate.authenticate, userController.getUserProfile);
 userRouter.put("/:handle", authenticate.authenticate, validation.checkPasswordChanged, userController.updateUser);
-// userRouter.delete("/:handle", userController.deleteUser);
+userRouter.delete("/:handle", authenticate.authenticate, userController.deleteUser);
 
 module.exports = userRouter;

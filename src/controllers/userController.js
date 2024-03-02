@@ -9,10 +9,12 @@ exports.login = async (req, res) => {
     const { email, handle, password } = req.body;
 
     if (!email && !handle) {
-      return res.status(400).send({ message: "Email or handle is required" });
+      res.status(400).json({ message: "Email or handle is required" });
+      return;
     }
     if (!password) {
-      return res.status(400).send({ message: "Password is required" });
+      res.status(400).json({ message: "Password is required" });
+      return;
     }
 
     const user = await User.findOne({
@@ -20,12 +22,14 @@ exports.login = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).send({ message: "User not found" });
+      res.status(404).json({ message: "User not found" });
+      return;
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).send({ message: "Invalid email or password" });
+      res.status(401).json({ message: "Invalid email/handle or password" });
+      return;
     }
 
     const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
@@ -33,24 +37,26 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: "1h" });
     res.cookie("token", token, { httpOnly: true, secure: true });
 
-    console.log(`res.get("Set-Cookie"): ${res.get("Set-Cookie")}`);
+    console.log(`res.get("Set-Cookie"): ${res.get("Set-Cookie")}`); // For debugging
 
-    // Send the user data back to the client
-    res.status(200).send({ user: rest });
+    res.status(200).json({ user: rest });
+    return;
   } catch (error) {
     console.log(error);
     if (error.code === 11000) {
       const errorField = Object.keys(error.keyValue)[0];
-      return res.status(400).json({ message: `The ${errorField} you entered is already in use` });
+      res.status(400).json({ message: `The ${errorField} you entered is already in use` });
+      return;
     }
-    res.status(500).send({ message: error.message });
+    res.status(500).json({ message: error.message });
+    return;
   }
 };
 
 exports.logout = (req, res) => {
   // Clear the 'token' cookie
   res.clearCookie("token");
-  res.status(200).send({ message: "Logged out" });
+  res.status(200).json({ message: "Logged out" });
 };
 
 exports.signup = async (req, res) => {
@@ -60,11 +66,14 @@ exports.signup = async (req, res) => {
     // const existingEmailUser = await User.findOne({ email });
     // const existingHandleUser = await User.findOne({ handle });
     // if (existingEmailUser && existingHandleUser) {
-    //   return res.status(400).send({ message: "Both email and handle already exist" });
+    //   res.status(400).json({ message: "Both email and handle already exist" });
+    //   return;
     // } else if (existingEmailUser) {
-    //   return res.status(400).send({ message: "Email already exists" });
+    //   res.status(400).json({ message: "Email already exists" });
+    //   return;
     // } else if (existingHandleUser) {
-    //   return res.status(400).send({ message: "Handle already exists" });
+    //   res.status(400).json({ message: "Handle already exists" });
+    //   return;
     // }
 
     // The create() method is equivalent to instantiating a document with new Model() and then calling save() on it.
@@ -73,14 +82,17 @@ exports.signup = async (req, res) => {
 
     const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
 
-    res.status(201).send({ rest });
+    res.status(201).json({ rest });
+    return;
   } catch (error) {
     console.log(error);
     if (error.code === 11000) {
       const errorField = Object.keys(error.keyValue)[0];
-      return res.status(400).json({ message: `The ${errorField} you entered is already in use` });
+      res.status(400).json({ message: `The ${errorField} you entered is already in use` });
+      return;
     }
-    res.status(500).send({ message: error.message });
+    res.status(500).json({ message: error.message });
+    return;
   }
 };
 
@@ -96,10 +108,12 @@ exports.getUsers = async (req, res) => {
 
     const users = await User.find(query).select("-password -__v -email");
 
-    res.status(200).send({ users });
+    res.status(200).json({ users });
+    return;
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: error.message });
+    res.status(500).json({ message: error.message });
+    return;
   }
 };
 
@@ -109,14 +123,14 @@ exports.getUsers = async (req, res) => {
 
 // const user = await User.findOne({ handle: handle }).select("-password -__v -email");
 
-//     res.status(200).send(user);
+//     res.status(200).json(user);
 //   } catch (error) {
 //     if (error.name === "CastError") {
-//       return res.status(400).send({ message: "Invalid user handle" });
+//       return res.status(400).json({ message: "Invalid user handle" });
 //     }
 
 //     console.log(error);
-//     res.status(400).send({ message: error.message });
+//     res.status(400).json({ message: error.message });
 //   }
 // };
 
@@ -143,14 +157,16 @@ exports.getUser = async (req, res) => {
       followers,
     };
 
-    res.status(200).send(result);
+    res.status(200).json(result);
   } catch (error) {
     if (error.name === "CastError") {
-      return res.status(400).send({ message: "Invalid user handle" });
+      res.status(400).json({ message: "Invalid user handle" });
+      return;
     }
 
     console.log(error);
-    res.status(500).send({ message: error.message });
+    res.status(500).json({ message: error.message });
+    return;
   }
 };
 
@@ -161,11 +177,13 @@ exports.updateUser = async (req, res) => {
 
     // Check if the authenticated user is the same as the user to be updated
     if (req.user.handle !== handle) {
-      return res.status(403).send({ message: "You can only update your own profile" });
+      res.status(403).json({ message: "You can only update your own profile" });
+      return;
     }
 
     if (!name && !bio && !newHandle && !email && !password && !profilePhoto) {
-      return res.status(400).send({ message: "At least one field is required to update the user" });
+      res.status(400).json({ message: "At least one field is required to update the user" });
+      return;
     }
 
     // Construct an update object that only includes the fields provided in req.body
@@ -177,20 +195,59 @@ exports.updateUser = async (req, res) => {
     if (req.passwordChanged) update.password = password;
     if (profilePhoto) update.profilePhoto = profilePhoto;
 
+    // By default, findOneAndUpdate() returns the document as it was before the update was applied.
+    // The { new: true } option, returns the document after the update has been applied.
     const updatedUser = await User.findOneAndUpdate({ handle }, update, { new: true });
-
     const { password: userPassword, __v, email: userEmail, ...rest } = updatedUser._doc;
 
-    res.status(200).send(updatedUser);
-    // res.status(200).send({ user: rest });
+    let changes = [];
+    for (const key in update) {
+      if (req.user[key] !== updatedUser[key]) {
+        changes.push({ field: key, oldValue: req.user[key], newValue: updatedUser[key] });
+      }
+      changes = changes.filter((change) => change.field !== "password");
+      if (key === "password") {
+        changes.push({ field: key, oldValue: "********", newValue: "********" });
+      }
+    }
+
+    // res.status(200).json(updatedUser);
+    res.status(200).json({ user: rest, changes });
   } catch (error) {
     console.log(error);
     if (error.code === 11000) {
       const errorField = Object.keys(error.keyValue)[0];
-      return res.status(400).json({ message: `The ${errorField} you entered is already in use` });
+      res.status(400).json({ message: `The ${errorField} you entered is already in use` });
+      return;
     }
-    res.status(500).send({ message: error.message });
+    res.status(500).json({ message: error.message });
+    return;
   }
 };
 
-// exports.deleteUser = async (req, res) => {};
+exports.deleteUser = async (req, res) => {
+  try {
+    const { handle } = req.params;
+    const { password } = req.body;
+
+    if (req.user.handle !== handle) {
+      res.status(403).json({ message: "You can only delete your own profile" });
+      return;
+    }
+
+    const isMatch = await req.user.comparePassword(password);
+    if (!isMatch) {
+      res.status(401).json({ message: "Invalid password" });
+      return;
+    }
+
+    await req.user.remove();
+
+    res.status(200).json(`User ${handle} has been deleted`);
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+    return;
+  }
+};

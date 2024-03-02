@@ -1,4 +1,5 @@
 // Path: src/middleware/validation.js
+
 const bcrypt = require("bcrypt");
 
 exports.checkPasswordChanged = async (req, res, next) => {
