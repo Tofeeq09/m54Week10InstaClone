@@ -62,9 +62,16 @@ const userSchema = new Schema({
       },
       message: (props) => `${props.value} is not a valid URL!`,
     },
+    default: function () {
+      return `https://picsum.photos/seed/${this._id}/200`;
+    },
   },
-  // posts field removed
 });
+
+// In JavaScript, arrow functions do not have their own `this` context. They inherit `this` from the parent scope.
+// In the context of Mongoose schema methods or middleware, using an arrow function can lead to unexpected results because `this` will not refer to the document instance or the query being executed.
+// In my case, the `this` keyword in these functions is used to access the document being saved or updated, or the user document in the comparePassword method.
+// If I were to convert these functions to arrow functions, `this` would not refer to the correct object, and the functions would not work correctly.
 
 // User middleware
 userSchema.pre("save", async function (next) {
