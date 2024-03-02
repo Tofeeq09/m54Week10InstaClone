@@ -117,23 +117,6 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-// exports.getUser = async (req, res) => {
-//   try {
-//     const { handle } = req.params;
-
-// const user = await User.findOne({ handle: handle }).select("-password -__v -email");
-
-//     res.status(200).json(user);
-//   } catch (error) {
-//     if (error.name === "CastError") {
-//       return res.status(400).json({ message: "Invalid user handle" });
-//     }
-
-//     console.log(error);
-//     res.status(400).json({ message: error.message });
-//   }
-// };
-
 exports.getUser = async (req, res) => {
   try {
     const { handle } = req.params;
@@ -241,7 +224,12 @@ exports.deleteUser = async (req, res) => {
       return;
     }
 
-    await req.user.remove();
+    const user = await User.findOneAndDelete({ handle: req.user.handle });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
 
     res.status(200).json(`User ${handle} has been deleted`);
     return;
