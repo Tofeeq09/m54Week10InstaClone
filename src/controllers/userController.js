@@ -159,15 +159,25 @@ exports.updateUser = async (req, res) => {
     const { handle } = req.params;
     const { name, bio, handle: newHandle, email, password, profilePhoto } = req.body;
 
+    // Check if the authenticated user is the same as the user to be updated
+    if (req.user.handle !== handle) {
+      return res.status(403).send({ message: "You can only update your own profile" });
+    }
+
     if (!name && !bio && !newHandle && !email && !password && !profilePhoto) {
       return res.status(400).send({ message: "At least one field is required to update the user" });
     }
 
-    const updatedUser = await User.findOneAndUpdate(
-      { handle },
-      { name, bio, handle: newHandle, email, password, profilePhoto },
-      { new: true }
-    );
+    // Construct an update object that only includes the fields provided in req.body
+    const update = {};
+    if (name) update.name = name;
+    if (bio) update.bio = bio;
+    if (newHandle) update.handle = newHandle;
+    if (email) update.email = email;
+    if (req.passwordChanged) update.password = password;
+    if (profilePhoto) update.profilePhoto = profilePhoto;
+
+    const updatedUser = await User.findOneAndUpdate({ handle }, update, { new: true });
 
     const { password: userPassword, __v, email: userEmail, ...rest } = updatedUser._doc;
 
