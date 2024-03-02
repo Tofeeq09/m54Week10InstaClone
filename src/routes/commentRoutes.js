@@ -9,11 +9,8 @@ const { authenticate } = require("../middleware");
 const commentRouter = Router();
 
 commentRouter.post("/post/:postId/:parentId?", authenticate.authenticate, commentController.addComment);
-
 commentRouter.get("/:commentId", commentController.getComment);
-
-commentRouter.put("/:commentId", authenticate.authenticate, commentController.updateComment);
-
+commentRouter.put("/:commentId", authenticate.authenticate, commentController.editComment);
 commentRouter.delete("/:commentId", authenticate.authenticate, commentController.deleteComment);
 
 module.exports = commentRouter;

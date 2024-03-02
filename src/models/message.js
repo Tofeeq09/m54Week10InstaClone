@@ -1,4 +1,4 @@
-// Path: src/models/Message.js
+// Path: src/models/message.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;

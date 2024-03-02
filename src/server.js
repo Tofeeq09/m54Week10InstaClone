@@ -6,7 +6,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const connection = require("./db/connection");
-const { userRoutes, postRoutes, commentRoutes, likeRoutes } = require("./routes");
+const { userRoutes, postRoutes, commentRoutes } = require("./routes");
 
 const port = process.env.PORT || 5001;
 
@@ -18,7 +18,6 @@ app.use(express.json());
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/comments", commentRoutes);
-app.use("/likes", likeRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ message: "Server is running" });

@@ -1,4 +1,4 @@
-// Path: src/models/Comment.js
+// Path: src/models/comment.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
@@ -9,6 +9,8 @@ const commentSchema = new mongoose.Schema({
   post: { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
   parent: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
   content: String,
+  likes: { type: Number, default: 0 },
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   timestamp: { type: Date, default: Date.now },
 });
 

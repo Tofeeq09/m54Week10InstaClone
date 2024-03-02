@@ -1,6 +1,6 @@
 // Path: src/controllers/commentController.js
 
-const { User, Like, Repost, Comment, Bookmark, Post, Follow } = require("../models");
+const { User, Post, Comment, Message } = require("../models");
 const buildCommentTree = require("../utils/commentUtils");
 
 exports.addComment = async (req, res) => {
@@ -27,13 +27,15 @@ exports.getComment = async (req, res) => {
   try {
     const { commentId } = req.params;
 
-    const comment = await Comment.findById(commentId).populate("user", "handle name profilePhoto");
+    const comment = await Comment.findById(commentId).populate("user", "handle name profilePhoto").populate("post");
 
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    const allComments = await Comment.find({ post: comment.post }).populate("user", "handle name profilePhoto");
+    const allComments = await Comment.find({ post: comment.post._id })
+      .populate("user", "handle name profilePhoto")
+      .sort({ votes: -1 });
 
     const commentTree = buildCommentTree(allComments);
 
@@ -44,7 +46,7 @@ exports.getComment = async (req, res) => {
   }
 };
 
-exports.updateComment = async (req, res) => {
+exports.editComment = async (req, res) => {
   try {
     const { commentId } = req.params;
     const { content } = req.body;

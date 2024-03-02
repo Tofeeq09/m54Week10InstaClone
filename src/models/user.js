@@ -1,4 +1,4 @@
-// Path: src/models/User.js
+// Path: src/models/user.js
 
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
@@ -56,6 +56,10 @@ const userSchema = new Schema({
       return `https://picsum.photos/seed/${this._id}/200`;
     },
   },
+  followers: { type: Number, default: 0 },
+  followersList: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  following: { type: Number, default: 0 },
+  followingList: [{ type: Schema.Types.ObjectId, ref: "User" }],
 });
 
 // In JavaScript, arrow functions do not have their own `this` context. They inherit `this` from the parent scope.

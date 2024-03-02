@@ -1,6 +1,6 @@
 // Path: src/controllers/messageController.js
 
-const { User, Like, Repost, Comment, Bookmark, Post, Follow } = require("../models");
+const { User, Post, Comment, Message } = require("../models");
 
 exports.postMessage = async (req, res) => {
   try {

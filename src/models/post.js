@@ -1,4 +1,4 @@
-// Path: src/models/Post.js
+// Path: src/models/post.js
 
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
@@ -22,6 +22,12 @@ const contentSchema = new Schema({
 const postSchema = new Schema({
   creator: { type: Schema.Types.ObjectId, ref: "User", required: true },
   content: { type: contentSchema, required: true },
+  likes: { type: Number, default: 0 },
+  likedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  reposts: { type: Number, default: 0 },
+  repostedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  bookmarks: { type: Number, default: 0 },
+  bookmarkedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
   timestamp: { type: Date, default: Date.now, index: true },
 });
 

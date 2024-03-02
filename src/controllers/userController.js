@@ -2,8 +2,39 @@
 
 const jwt = require("jsonwebtoken");
 
-const { User, Like, Repost, Comment, Bookmark, Post, Follow } = require("../models");
+const { User, Post, Comment, Message } = require("../models");
 
+// Controller method for user signup
+exports.signup = async (req, res) => {
+  try {
+    const { name, handle, email, password } = req.body;
+
+    // The create() method is equivalent to instantiating a document with new Model() and then calling save() on it.
+    const user = new User({ name, handle, email, password });
+    await user.save(); // re('save') middleware defined in src/models/User.js runs before the save()
+
+    const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
+
+    const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: "1h" });
+    res.cookie("token", token, { httpOnly: true, secure: true });
+
+    console.log(`token=${token}`); // For development purposes
+
+    res.status(201).json({ rest });
+    return;
+  } catch (error) {
+    console.log(error);
+    if (error.code === 11000) {
+      const errorField = Object.keys(error.keyValue)[0];
+      res.status(400).json({ message: `The ${errorField} you entered is already in use` });
+      return;
+    }
+    res.status(500).json({ message: error.message });
+    return;
+  }
+};
+
+// Controller method for user login
 exports.login = async (req, res) => {
   try {
     const { email, handle, password } = req.body;
@@ -37,7 +68,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: "1h" });
     res.cookie("token", token, { httpOnly: true, secure: true });
 
-    console.log(`res.get("Set-Cookie"): ${res.get("Set-Cookie")}`); // For development purposes
+    console.log(`token=${token}`); // For development purposes
 
     res.status(200).json({ user: rest });
     return;
@@ -53,50 +84,97 @@ exports.login = async (req, res) => {
   }
 };
 
+// Controller method for user logout
 exports.logout = (req, res) => {
-  // Clear the 'token' cookie
-
-  res.clearCookie("token");
-  res.status(200).json({ message: `User ${req.user.handle} has been logged out` });
-};
-
-exports.signup = async (req, res) => {
   try {
-    const { name, handle, email, password } = req.body;
-
-    // const existingEmailUser = await User.findOne({ email });
-    // const existingHandleUser = await User.findOne({ handle });
-    // if (existingEmailUser && existingHandleUser) {
-    //   res.status(400).json({ message: "Both email and handle already exist" });
-    //   return;
-    // } else if (existingEmailUser) {
-    //   res.status(400).json({ message: "Email already exists" });
-    //   return;
-    // } else if (existingHandleUser) {
-    //   res.status(400).json({ message: "Handle already exists" });
-    //   return;
-    // }
-
-    // The create() method is equivalent to instantiating a document with new Model() and then calling save() on it.
-    const user = new User({ name, handle, email, password });
-    await user.save(); // re('save') middleware defined in src/models/User.js runs before the save()
-
-    const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
-
-    res.status(201).json({ rest });
+    res.clearCookie("token"); // Clear the token cookie
+    res.status(200).json({ message: `User ${req.user.handle} has been logged out` });
     return;
   } catch (error) {
     console.log(error);
-    if (error.code === 11000) {
-      const errorField = Object.keys(error.keyValue)[0];
-      res.status(400).json({ message: `The ${errorField} you entered is already in use` });
-      return;
-    }
     res.status(500).json({ message: error.message });
     return;
   }
 };
 
+// Controller method for following a user
+exports.followUser = async (req, res) => {
+  try {
+    const { handle } = req.params;
+    const userToFollow = await User.findOne({ handle });
+
+    if (!userToFollow) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    // Check if req.user and req.user.followingList exist
+    if (!req.user || !req.user.followingList) {
+      res.status(400).json({ message: "Current user not properly defined" });
+      return;
+    }
+
+    // Check if the current user is already following the user to follow
+    if (req.user.followingList.some((id) => id.equals(userToFollow._id))) {
+      res.status(400).json({ message: `You are already following ${handle}` });
+      return;
+    }
+
+    // Add the user to follow to the current user's following list and increment following count
+    req.user.followingList.push(userToFollow._id);
+    await User.updateOne({ _id: req.user._id }, { $push: { followingList: userToFollow._id }, $inc: { following: 1 } });
+
+    // Add the current user to the user to follow's followers list and increment followers count
+    userToFollow.followersList.push(req.user._id);
+    await User.updateOne({ _id: userToFollow._id }, { $push: { followersList: req.user._id }, $inc: { followers: 1 } });
+
+    res.status(200).json({ message: `You are now following ${handle}` });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+    return;
+  }
+};
+
+// Controller method for unfollowing a user
+exports.unfollowUser = async (req, res) => {
+  try {
+    const { handle } = req.params;
+    const userToUnfollow = await User.findOne({ handle });
+
+    if (!userToUnfollow) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    // Check if the current user is not following the user to unfollow
+    if (!req.user.followingList.some((id) => id.equals(userToUnfollow._id))) {
+      res.status(400).json({ message: `You are not following ${handle}` });
+      return;
+    }
+
+    // Remove the user to unfollow from the current user's following list and decrement following count
+    req.user.followingList = req.user.followingList.filter((id) => !id.equals(userToUnfollow._id));
+    await User.updateOne({ _id: req.user._id }, { followingList: req.user.followingList, $inc: { following: -1 } });
+
+    // Remove the current user from the user to unfollow's followers list and decrement followers count
+    userToUnfollow.followersList = userToUnfollow.followersList.filter((id) => !id.equals(req.user._id));
+    await User.updateOne(
+      { _id: userToUnfollow._id },
+      { followersList: userToUnfollow.followersList, $inc: { followers: -1 } }
+    );
+
+    res.status(200).json({ message: `You are no longer following ${handle}` });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+    return;
+  }
+};
+
+// Controller method for getting all users
 exports.getUsers = async (req, res) => {
   try {
     const searchQuery = (req.query.search || "").trim();
@@ -118,42 +196,30 @@ exports.getUsers = async (req, res) => {
   }
 };
 
+// Controller method for getting a user by handle
 exports.getUser = async (req, res) => {
   try {
-    const { handle } = req.params;
+    const user = await User.findOne({ handle: req.params.handle })
+      .populate("followersList", "handle")
+      .populate("followingList", "handle");
 
-    const user = await User.findOne({ handle: handle });
-    const likes = await Like.find({ user: user._id }).populate("post");
-    const reposts = await Repost.find({ user: user._id }).populate("post");
-    const bookmarks = await Bookmark.find({ user: user._id }).populate("post");
-    const posts = await Post.find({ creator: user._id });
-    const following = await Follow.find({ user: user._id }).populate("followedUser");
-    const followers = await Follow.find({ followedUser: user._id }).populate("user");
-
-    const { password, __v, email, ...rest } = user._doc;
-    const result = {
-      ...rest,
-      posts,
-      reposts,
-      likes,
-      bookmarks,
-      following,
-      followers,
-    };
-
-    res.status(200).json(result);
-  } catch (error) {
-    if (error.name === "CastError") {
-      res.status(400).json({ message: "Invalid user handle" });
-      return;
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+    const { password, __v, email, ...rest } = user._doc;
 
-    console.log(error);
+    rest.posts = await Post.find({ creator: user._id });
+    rest.comments = await Comment.find({ user: user._id });
+    rest.likedPosts = await Post.find({ likedBy: user._id });
+    rest.repostedPosts = await Post.find({ repostedBy: user._id });
+
+    res.status(200).json({ user: rest });
+  } catch (error) {
     res.status(500).json({ message: error.message });
-    return;
   }
 };
 
+// Controller method for getting private user data
 exports.getPrivate = async (req, res) => {
   try {
     const { handle } = req.params;
@@ -173,6 +239,7 @@ exports.getPrivate = async (req, res) => {
   }
 };
 
+// Controller method for updating a user
 exports.updateUser = async (req, res) => {
   try {
     const { handle } = req.params;
@@ -228,6 +295,7 @@ exports.updateUser = async (req, res) => {
   }
 };
 
+// Controller method for deleting a user
 exports.deleteUser = async (req, res) => {
   try {
     const { handle } = req.params;
