@@ -23,7 +23,7 @@ exports.addPost = async (req, res) => {
   }
 };
 
-exports.getPostsByHandle = async (req, res) => {
+exports.getPosts = async (req, res) => {
   try {
     const { handle } = req.params;
     const user = await User.findOne({ handle });
