@@ -10,6 +10,8 @@ const postRouter = Router();
 
 postRouter.post("/:handle", authenticate.authenticate, postController.addPost);
 postRouter.get("/", postController.getAllPosts);
-postRouter.get("/:handle", postController.getPostsByHandle);
+postRouter.get("/user/:handle", postController.getPostsByHandle);
+postRouter.get("/:postId", postController.getPost);
+// postRouter.delete("/:handle/post/:postId", postController.deletePost);
 
 module.exports = postRouter;

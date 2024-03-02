@@ -113,3 +113,35 @@ exports.getPostsByHandle = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId).populate("creator", "handle name");
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const [likeCount, repostCount, commentCount, bookmarkCount] = await Promise.all([
+      Like.countDocuments({ post: postId }),
+      Repost.countDocuments({ post: postId }),
+      Comment.countDocuments({ post: postId }),
+      Bookmark.countDocuments({ post: postId }),
+    ]);
+
+    const postWithCounts = {
+      ...post._doc,
+      likeCount,
+      repostCount,
+      commentCount,
+      bookmarkCount,
+    };
+
+    res.status(200).json(postWithCounts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
