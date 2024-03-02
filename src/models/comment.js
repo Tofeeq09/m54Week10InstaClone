@@ -31,6 +31,8 @@ commentSchema.post("save", async function (doc) {
   await Post.findByIdAndUpdate(doc.post, { $push: { comments: doc._id } });
 });
 
+commentSchema.index({ content: "text" });
+
 const Comment = mongoose.model("Comment", commentSchema);
 
 module.exports = Comment;

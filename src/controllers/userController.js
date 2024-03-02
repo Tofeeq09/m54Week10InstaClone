@@ -2,7 +2,7 @@
 
 const jwt = require("jsonwebtoken");
 
-const { User, Like, Repost, Bookmark, Post, Follow } = require("../models");
+const { User, Like, Repost, Comment, Bookmark, Post, Follow } = require("../models");
 
 exports.login = async (req, res) => {
   try {

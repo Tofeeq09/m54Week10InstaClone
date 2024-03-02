@@ -2,7 +2,7 @@
 
 const userController = require("./userController");
 const postController = require("./postController");
-// const commentController = require("./commentController");
+const commentController = require("./commentController");
 // const messageController = require("./messageController");
 const likeController = require("./likeController");
 // const repostController = require("./repostController");
@@ -12,7 +12,7 @@ const likeController = require("./likeController");
 module.exports = {
   userController,
   postController,
-  //   commentController,
+  commentController,
   //   messageController,
   likeController,
   //   repostController,

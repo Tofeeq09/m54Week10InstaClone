@@ -118,7 +118,7 @@ exports.getPost = async (req, res) => {
   try {
     const { postId } = req.params;
 
-    const post = await Post.findById(postId).populate("creator", "handle name");
+    const post = await Post.findById(postId).populate("creator", "handle name profilePhoto");
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -131,12 +131,15 @@ exports.getPost = async (req, res) => {
       Bookmark.countDocuments({ post: postId }),
     ]);
 
+    const comments = await Comment.find({ post: postId }).populate("user", "handle name profilePhoto");
+
     const postWithCounts = {
       ...post._doc,
       likeCount,
       repostCount,
       commentCount,
       bookmarkCount,
+      comments,
     };
 
     res.status(200).json(postWithCounts);

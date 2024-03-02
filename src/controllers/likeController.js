@@ -1,6 +1,6 @@
 // Path: src/controllers/likeController.js
 
-const { User, Like, Repost, Bookmark, Post, Follow } = require("../models");
+const { User, Like, Repost, Comment, Bookmark, Post, Follow } = require("../models");
 
 exports.getLikes = async (req, res) => {
   try {

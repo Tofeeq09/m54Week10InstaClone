@@ -2,7 +2,7 @@
 
 const userRoutes = require("./userRoutes");
 const postRoutes = require("./postRoutes");
-// const commentRoutes = require("./commentRoutes");
+const commentRoutes = require("./commentRoutes");
 // const messageRoutes = require("./messageRoutes");
 const likeRoutes = require("./likeRoutes");
 // const repostRoutes = require("./repostRoutes");
@@ -12,7 +12,7 @@ const likeRoutes = require("./likeRoutes");
 module.exports = {
   userRoutes,
   postRoutes,
-  // commentRoutes,
+  commentRoutes,
   // messageRoutes,
   likeRoutes,
   // repostRoutes,
