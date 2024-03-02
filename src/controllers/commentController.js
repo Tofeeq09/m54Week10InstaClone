@@ -38,6 +38,27 @@ exports.getComment = async (req, res) => {
   }
 };
 
+exports.updateComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { content } = req.body;
+
+    const comment = await Comment.findByIdAndUpdate(commentId, { content }, { new: true }).populate(
+      "user",
+      "handle name profilePhoto"
+    );
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    res.status(200).json({ message: "Comment updated successfully", comment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.deleteComment = async (req, res) => {
   try {
     const { commentId } = req.params;

@@ -12,7 +12,7 @@ commentRouter.post("/post/:postId", authenticate.authenticate, commentController
 
 commentRouter.get("/:commentId", commentController.getComment);
 
-// commentRouter.put("/:commentId", authenticate.authenticate, commentController.updateComment);
+commentRouter.put("/:commentId", authenticate.authenticate, commentController.updateComment);
 
 commentRouter.delete("/:commentId", authenticate.authenticate, commentController.deleteComment);
 
