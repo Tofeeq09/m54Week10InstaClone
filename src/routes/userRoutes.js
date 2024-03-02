@@ -13,8 +13,8 @@ userRouter.post("/login", userController.login);
 userRouter.post("/logout", userController.logout);
 userRouter.post("/signup", userController.signup);
 userRouter.get("/", userController.getUsers);
-userRouter.get("/:handle", authenticate.authenticate, userController.getUser);
-// userRouter.get("/:handle/profile", authenticate.authenticate, userController.getUserProfile);
+userRouter.get("/:handle", userController.getUser);
+userRouter.get("/:handle/private", authenticate.authenticate, userController.getPrivate);
 userRouter.put("/:handle", authenticate.authenticate, validation.checkPasswordChanged, userController.updateUser);
 userRouter.delete("/:handle", authenticate.authenticate, userController.deleteUser);
 

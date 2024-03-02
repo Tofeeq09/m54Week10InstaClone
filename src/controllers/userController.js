@@ -153,6 +153,25 @@ exports.getUser = async (req, res) => {
   }
 };
 
+exports.getPrivate = async (req, res) => {
+  try {
+    const { handle } = req.params;
+
+    if (req.user.handle !== handle) {
+      res.status(403).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const email = req.user.email;
+
+    res.status(200).json(email);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+    return;
+  }
+};
+
 exports.updateUser = async (req, res) => {
   try {
     const { handle } = req.params;
@@ -160,7 +179,7 @@ exports.updateUser = async (req, res) => {
 
     // Check if the authenticated user is the same as the user to be updated
     if (req.user.handle !== handle) {
-      res.status(403).json({ message: "You can only update your own profile" });
+      res.status(403).json({ message: "Unauthorized" });
       return;
     }
 
@@ -214,7 +233,7 @@ exports.deleteUser = async (req, res) => {
     const { password } = req.body;
 
     if (req.user.handle !== handle) {
-      res.status(403).json({ message: "You can only delete your own profile" });
+      res.status(403).json({ message: "Unauthorized" });
       return;
     }
 
