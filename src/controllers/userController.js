@@ -20,7 +20,7 @@ exports.signup = async (req, res) => {
 
     console.log(`token=${token}`); // For development purposes
 
-    res.status(201).json({ rest });
+    res.status(201).json({ user: rest });
     return;
   } catch (error) {
     console.log(error);
