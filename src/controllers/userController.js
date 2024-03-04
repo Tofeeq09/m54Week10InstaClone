@@ -16,7 +16,7 @@ exports.signup = async (req, res) => {
     const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
 
     const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: "1h" });
-    res.cookie("token", token, { httpOnly: true, secure: true });
+    res.cookie("token", token, { httpOnly: true });
 
     console.log(`token=${token}`); // For development purposes
 
@@ -37,6 +37,12 @@ exports.signup = async (req, res) => {
 // Controller method for user login
 exports.login = async (req, res) => {
   try {
+    if (req.user) {
+      const { password: userPassword, __v, email: userEmail, ...rest } = req.user._doc;
+      res.status(200).json({ user: rest });
+      return;
+    }
+
     const { email, handle, password } = req.body;
 
     if (!email && !handle) {
@@ -66,7 +72,7 @@ exports.login = async (req, res) => {
     const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
 
     const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: "1h" });
-    res.cookie("token", token, { httpOnly: true, secure: true });
+    res.cookie("token", token, { httpOnly: true });
 
     console.log(`token=${token}`); // For development purposes
 

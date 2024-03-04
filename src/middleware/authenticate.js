@@ -1,31 +1,24 @@
 // Path: src/middleware/authenticate.js
 
 const jwt = require("jsonwebtoken");
-
 const { User } = require("../models");
 
 exports.persistentLogin = async (req, res, next) => {
   const token = req.cookies.token;
-
+  console.log(token);
   if (!token) {
-    res.status(401).json({ message: "No token provided" });
-    return;
+    return next();
   }
-
   try {
-    const payload = jwt.verify(token, process.env.SECRET);
-    const user = await User.findById(payload.userId);
-
+    const decoded = jwt.verify(token, process.env.SECRET);
+    const user = await User.findById(decoded.userId);
     if (!user) {
-      res.status(401).json({ message: "User not found" });
-      return;
+      throw new Error();
     }
-
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ message: "Invalid token" });
-    return;
+    res.status(401).send({ error: "Please authenticate." });
   }
 };
 
@@ -34,23 +27,26 @@ exports.authenticate = async (req, res, next) => {
   const token = req.cookies.token;
 
   if (!token) {
-    res.status(401).json({ message: "No token provided" });
+    res.clearCookie("token");
+    res.status(401).json({ success: false, source: "authenticate", message: "Unauthorized" });
     return;
   }
 
   try {
-    const payload = jwt.verify(token, process.env.SECRET);
-    const user = await User.findById(payload.userId);
+    const decoded = jwt.verify(token, process.env.SECRET);
+    const user = await User.findById(decoded.userId);
 
     if (!user) {
-      res.status(401).json({ message: "User not found" });
+      res.clearCookie("token");
+      res.status(401).json({ success: false, message: "User not found" });
       return;
     }
 
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ message: "Invalid token" });
+    res.clearCookie("token");
+    res.status(401).json({ success: false, message: "Not authorized to access this route" });
     return;
   }
 };
