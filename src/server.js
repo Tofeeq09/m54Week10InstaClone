@@ -11,14 +11,21 @@ const { userRoutes, postRoutes, commentRoutes, conversationRoutes } = require(".
 const port = process.env.PORT || 5001;
 
 const app = express();
+const apiRouter = express.Router();
 app.use(cookieParser());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
-app.use("/users", userRoutes);
-app.use("/posts", postRoutes);
-app.use("/comments", commentRoutes);
-app.use("/conversations", conversationRoutes);
+app.use("/api", apiRouter);
+apiRouter.use("/users", userRoutes);
+apiRouter.use("/posts", postRoutes);
+apiRouter.use("/comments", commentRoutes);
+apiRouter.use("/conversations", conversationRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ message: "Server is running" });
