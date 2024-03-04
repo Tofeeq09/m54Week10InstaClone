@@ -16,7 +16,7 @@ exports.signup = async (req, res) => {
     const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
 
     const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: "1h" });
-    res.cookie("token", token, { httpOnly: true });
+    res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
 
     console.log(`token=${token}`); // For development purposes
 
@@ -72,7 +72,7 @@ exports.login = async (req, res) => {
     const { password: userPassword, __v, email: userEmail, ...rest } = user._doc;
 
     const token = jwt.sign({ userId: user._id }, process.env.SECRET, { expiresIn: "1h" });
-    res.cookie("token", token, { httpOnly: true });
+    res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
 
     console.log(`token=${token}`); // For development purposes
 

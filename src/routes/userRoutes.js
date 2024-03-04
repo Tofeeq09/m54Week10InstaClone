@@ -11,7 +11,6 @@ const userRouter = Router();
 // POST routes
 userRouter.post("/signup", userController.signup); // Route for user signup
 userRouter.post("/login", userController.login); // Route for user login
-userRouter.post("/verify", authenticate.authenticate, userController.login); // Route for verifying user login
 userRouter.post("/logout", authenticate.authenticate, userController.logout); // Route for user logout
 userRouter.post("/:handle/follow", authenticate.authenticate, userController.followUser); // Route for following a user
 userRouter.post("/:handle/unfollow", authenticate.authenticate, userController.unfollowUser); // Route for unfollowing a user
