@@ -17,9 +17,9 @@ const userSchema = new Schema({
     index: true,
     validate: {
       validator: function (v) {
-        return /^[a-zA-Z0-9_]+$/.test(v);
+        return /^\w+$/.test(v);
       },
-      message: (props) => `${props.value} is not a valid handle!`,
+      message: (props) => `${props.value} is not a valid username!`,
     },
   },
   email: {

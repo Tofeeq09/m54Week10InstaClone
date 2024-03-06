@@ -16,6 +16,7 @@ exports.addComment = async (req, res) => {
       content: content,
     });
 
+    console.log(`Comment added successfully: ${comment}`);
     res.status(200).json({ message: "Comment added successfully", comment });
   } catch (error) {
     console.error(error);
